@@ -1,105 +1,161 @@
 'use client'
-import { useEffect, useState} from 'react';
-import { Card, Button, Col, Row } from 'antd';
+import { useEffect, useState } from 'react';
+import { Card, Button, Col, Row, Modal, Form, Input, Select } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
+import useAptos from "@/context/useAptos";
 
-function NFTCard(props: { token:any }) {
-    const { Meta } = Card;
-    const  current_token_data  = props.token
-    console.log(current_token_data);
+function NFTCard(props: { token: any }) {
+  const { Meta } = Card;
+  const { aptos, moduleAddress } = useAptos();
+  const current_token_data = props.token
+  console.log(current_token_data);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 6 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 14 },
+    },
+  };
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
 
-    const { signAndSubmitTransaction } = useWallet();
-    const [campaigndetails, setcampaigndetails] = useState(null);
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
 
-    /**
-  * Converts an IPFS link to an HTTPS URL using a specified gateway.
-  * 
-  * @param ipfsUrl The IPFS URL to convert, starting with 'ipfs://'.
-  * @param gateway The IPFS gateway to use for the conversion, defaults to 'https://ipfs.io/ipfs/'.
-  * @returns The HTTPS URL corresponding to the given IPFS link.
-  */
-    function convertIpfsToHttps(ipfsUrl: string, gateway: string = 'https://ipfs.io/ipfs/'): string {
-        // Check if the URL starts with 'ipfs://'
-        if (!ipfsUrl.startsWith('ipfs://')) {
-            console.log(ipfsUrl)
-            throw new Error('Invalid IPFS URL');
-        }
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+  const { account, signAndSubmitTransaction } = useWallet();
+  const [campaigndetails, setcampaigndetails] = useState(null);
 
-        // Remove the 'ipfs://' prefix and return the full HTTPS URL
-        const hash = ipfsUrl.slice(7); // Remove 'ipfs://' (7 characters)
-        return `${gateway}${hash}`;
+  /**
+* Converts an IPFS link to an HTTPS URL using a specified gateway.
+* 
+* @param ipfsUrl The IPFS URL to convert, starting with 'ipfs://'.
+* @param gateway The IPFS gateway to use for the conversion, defaults to 'https://ipfs.io/ipfs/'.
+* @returns The HTTPS URL corresponding to the given IPFS link.
+*/
+  function convertIpfsToHttps(ipfsUrl: string, gateway: string = 'https://ipfs.io/ipfs/'): string {
+    // Check if the URL starts with 'ipfs://'
+    if (!ipfsUrl.startsWith('ipfs://')) {
+      console.log(ipfsUrl)
+      throw new Error('Invalid IPFS URL');
     }
-    const ipfsUri = current_token_data?.current_collection?.uri;
-    const httpsUri = ipfsUri ? convertIpfsToHttps(ipfsUri) : "404";
 
-    const startCampaign = async () => {
-        // setloading(true);
-        const id  = current_token_data?.token_name;
-        const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
-        const match = id.match(regex);
-        const idfinal = parseInt(match[1]);
-    
-        try {
-          const mintTransaction = {
-            arguments: [current_token_data?.token_data_id],
-            function:
-              "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::start_campaign",
-            type: "entry_function_payload",
-            type_arguments: [],
-          };
-    
-          const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
-            mintTransaction
-          );
-          console.log("created game:", mintResponse);
-        //   setstartbuttonclick(true);
-        } catch (error) {
-          console.error("Error handling", error);
-        } finally {
-        //   setloading(false);
-        }
+    // Remove the 'ipfs://' prefix and return the full HTTPS URL
+    const hash = ipfsUrl.slice(7); // Remove 'ipfs://' (7 characters)
+    return `${gateway}${hash}`;
+  }
+  const ipfsUri = current_token_data?.current_collection?.uri;
+  const httpsUri = ipfsUri ? convertIpfsToHttps(ipfsUri) : "404";
+
+  const startCampaign = async () => {
+    // setloading(true);
+    const id = current_token_data?.token_name;
+    const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
+    const match = id.match(regex);
+    const idfinal = parseInt(match[1]);
+
+    try {
+      const mintTransaction = {
+        arguments: [current_token_data?.token_data_id],
+        function:
+          "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::start_campaign",
+        type: "entry_function_payload",
+        type_arguments: [],
       };
 
+      const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
+        mintTransaction
+      );
+      console.log("created game:", mintResponse);
+      //   setstartbuttonclick(true);
+    } catch (error) {
+      console.error("Error handling", error);
+    } finally {
+      //   setloading(false);
+    }
+  };
 
-      const joinCampaign = async () => {
-        // setloading(true);
-        const id  = current_token_data?.token_name;
-        const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
-        const match = id.match(regex);
-        const idfinal = parseInt(match[1]);
-    
-        try {
-          const mintTransaction = {
-            arguments: [idfinal, current_token_data?.token_data_id],
-            function:
-              "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::join_campaign",
-            type: "entry_function_payload",
-            type_arguments: [],
-          };
-    
-          const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
-            mintTransaction
-          );
-          console.log("created game:", mintResponse);
-        //   setstartbuttonclick(true);
-        } catch (error) {
-          console.error("Error handling", error);
-        } finally {
-        //   setloading(false);
-        }
+
+  const joinCampaign = async () => {
+    // setloading(true);
+    const id = current_token_data?.token_name;
+    const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
+    const match = id.match(regex);
+    const idfinal = parseInt(match[1]);
+
+    try {
+      const mintTransaction = {
+        arguments: [idfinal, current_token_data?.token_data_id],
+        function:
+          "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::join_campaign",
+        type: "entry_function_payload",
+        type_arguments: [],
       };
 
+      const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
+        mintTransaction
+      );
+      console.log("created game:", mintResponse);
+      //   setstartbuttonclick(true);
+    } catch (error) {
+      console.error("Error handling", error);
+    } finally {
+      //   setloading(false);
+    }
+  };
 
-      useEffect(() => {
+ 
+    const milestoneCompletion = async (data: Array<any>) => {
+      if (!account) return [];
+      const transaction: InputTransactionData = {
+        data: {
+          function: `${moduleAddress}::cw::milestone_completion_proposal_v2`,
+          functionArguments: [...data]
+        }
+      }
+      try {
+        // sign and submit transaction to chain
+        const response = await signAndSubmitTransaction(transaction);
+        // wait for transaction
+        await aptos.waitForTransaction({ transactionHash: response.hash });
+        console.log(response, '-------+++++++++++++++----------')
 
-        const getcollection  = async () => {
-          let ticketDatabody = {
-          "function":"0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::get_campaign_vals",
-          "type_arguments":[],
-          "arguments":[current_token_data?.token_data_id]
-        } 
-      
-        try {
+      } catch (error: any) {
+        console.log('error:', error)
+      }
+    }
+
+  
+
+  const onFinish = (values: any) => {
+    console.log(props.token.token_data_id,values)
+    milestoneCompletion([
+      props.token.token_data_id,
+      '1',
+      values.expiration_secs,
+      values.milestone,
+      values.proof,
+    ])
+  }
+
+  useEffect(() => {
+
+    const getcollection = async () => {
+      let ticketDatabody = {
+        "function": "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::get_campaign_vals",
+        "type_arguments": [],
+        "arguments": [current_token_data?.token_data_id]
+      }
+
+      try {
         const res = await fetch(
           `https://fullnode.devnet.aptoslabs.com/v1/view`,
           {
@@ -111,35 +167,72 @@ function NFTCard(props: { token:any }) {
             body: JSON.stringify(ticketDatabody),
           }
         );
-      
+
         const colllection = await res.json();
         setcampaigndetails(colllection[0]);
         console.log("view fucntion res", colllection);
-        }
-        catch(error){
-          console.error("Error fetching nft data:", error);
-        }
       }
-        getcollection();
-      }, [])
+      catch (error) {
+        console.error("Error fetching nft data:", error);
+      }
+    }
+    getcollection();
+  }, [])
 
 
-    return (
-        <Card
-            hoverable
-            style={{ width: 240 }}
-            cover={<img alt="example" src={httpsUri} />}
-        >
-            <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
-            <div>Start Time : {campaigndetails?campaigndetails[0]:''}</div>
-            <div>Min entry price : {campaigndetails?campaigndetails[1]:''}</div>
-            <div>Unit price : {campaigndetails?campaigndetails[2]:''}</div>
-            <div>Target : {campaigndetails?campaigndetails[3]:''}</div>
-            <div>Total supply : {campaigndetails?campaigndetails[4]:''}</div>
-            <Button onClick={joinCampaign}>Join</Button>
-            <Button onClick={startCampaign}>Start</Button>
-        </Card>
-    )
+  return (
+    <>
+      <Card
+        hoverable
+        style={{ width: 240 }}
+        cover={<img alt="example" src={httpsUri} />}
+      >
+        <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
+        <div>Start Time : {campaigndetails ? campaigndetails[0] : ''}</div>
+        <div>Min entry price : {campaigndetails ? campaigndetails[1] : ''}</div>
+        <div>Unit price : {campaigndetails ? campaigndetails[2] : ''}</div>
+        <div>Target : {campaigndetails ? campaigndetails[3] : ''}</div>
+        <div>Total supply : {campaigndetails ? campaigndetails[4] : ''}</div>
+        <Button onClick={joinCampaign}>Join</Button>
+        <Button onClick={startCampaign}>Start</Button>
+        <Button onClick={showModal}>milestone Completion</Button>
+      </Card>
+      <Modal title="Basic Modal" open={isModalOpen}  onCancel={handleCancel} footer={null}>
+
+        <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
+
+          <Form.Item label="milestone" name="milestone" rules={[{ required: true, message: 'Please input!' }]}>
+            <Select
+              style={{ width: 120 }}
+              options={[
+                { value: '1', label: 'stage1' },
+                { value: '2', label: 'stage2' },
+                { value: '3', label: 'stage3' },
+                { value: '4', label: 'stage4' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="expiration_secs" name="expiration_secs" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+
+
+          <Form.Item label=" proof" name="proof" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+
+
+
+          <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+
+  )
 }
 
 export default NFTCard;

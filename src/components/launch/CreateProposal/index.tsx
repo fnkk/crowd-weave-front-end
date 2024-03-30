@@ -9,11 +9,13 @@ import {
   Mentions,
   Select,
   TreeSelect,
+  message
 } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import useAptos from "@/context/useAptos";
 
 const CreateProposal = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const { aptos, moduleAddress } = useAptos();
   const { account, signAndSubmitTransaction } = useWallet();
   const formItemLayout = {
@@ -29,10 +31,10 @@ const CreateProposal = () => {
   const { RangePicker } = DatePicker;
   const onFinish = (values: any) => {
     console.log(6666)
-    console.log(values);
+    console.log(values.start_time.valueOf())
     createProposal([
       values.campaign_name,
-      '202020202',
+      values.start_time.valueOf(),
       values.min_entry_price.toString(),
       values.unit_price.toString(),
       values.collection_name,
@@ -57,14 +59,16 @@ const CreateProposal = () => {
       const response = await signAndSubmitTransaction(transaction);
       // wait for transaction
       await aptos.waitForTransaction({ transactionHash: response.hash });
+      messageApi.success('You are succeed!');
+
     } catch (error: any) {
       console.log('error:', error)
     }
   }
   return (
     <div className="flex justify-center ">
+      {contextHolder}
       <div className="text-sm mt-8 py-8 px-8 rounded-md border mb-6 w-[660px]">
-
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
           <Form.Item label="campaign_name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
@@ -74,7 +78,7 @@ const CreateProposal = () => {
             name="start_time"
             rules={[{ required: true, message: 'Please input!' }]}
           >
-            <DatePicker format="YYYY-MM-DD" />
+            <DatePicker />
           </Form.Item>
           <Form.Item
             label="min_entry_price"
