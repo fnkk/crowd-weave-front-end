@@ -88,7 +88,7 @@ const Ongoing = () => {
     return (
       <>
         <div className="flex justify-center">
-          <div className="w-[1200px] grid grid-cols-4 flex-wrap gap-4 justify-center items-center mt-20">
+          <div className="w-[1200px] grid grid-cols-3 flex-wrap gap-10 justify-center items-center mt-20">
             {nftList.map((item: any, index: any) => {
               return (
                 <NFTCard token={item} key={index} />
