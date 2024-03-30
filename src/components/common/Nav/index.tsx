@@ -17,39 +17,30 @@ const Nav = ({}) => {
       title: "Launch",
       subItems: [
         { title: "Create Proposal", path: "/launch/create-proposal" },
-        { title: "Convert Proposal", path: "/launch/convert-proposal" },
       ],
     },
     {
       title: "Explore",
       subItems: [
-        { title: "Ongoing Proposals", path: "/explore/ongoing-proposals" },
-        {
-          title: "Crowdfunding Events",
-          path: "/explore/crowdfunding-events",
-        },
+        { title: "Ongoing Proposals", path: "/explore/ongoing-proposals" }
       ],
     },
     {
       title: "Dashboard",
       subItems: [
-        {
-          title: "Crowdfunding Events",
-          path: "/dashboard/crowdfunding-events",
-        },
-        { title: "Started Events", path: "/dashboard/started-events" },
+        { title: "My Proposals", path: "/dashboardmy-proposal" },
       ],
     },
   ];
 
   return (
     <div className="px-6 py-4 shadow-sm flex justify-between items-center">
-      <div className="flex gap-2 items-center">
+      <Link href={'/'} className="flex gap-2 items-center">
         <div className="text-2xl">
           <SiWebmoney />
         </div>
         <div className="text-xl font-semibold">CrowdWeave</div>
-      </div>
+      </Link>
 
       <div className="flex gap-4 items-center">
         {navLinks.map((navItem) => (

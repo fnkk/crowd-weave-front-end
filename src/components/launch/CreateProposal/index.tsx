@@ -39,8 +39,7 @@ const CreateProposal = () => {
     console.log(values.start_time.valueOf())
     createProposal([
       values.campaign_name,
-      // values.start_time.valueOf(),
-      '1',
+      values.start_time.valueOf(),
       values.min_entry_price.toString(),
       values.unit_price.toString(),
       values.collection_name,

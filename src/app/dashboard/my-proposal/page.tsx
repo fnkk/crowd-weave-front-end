@@ -1,10 +1,10 @@
-import ProposalSummary from "@/components/launch/ProposalSummary";
+import MyProposal from "@/components/dashboard/MyProposal";
 import React from "react";
 
 const page = () => {
   return (
     <div>
-      <ProposalSummary />
+      <MyProposal />
     </div>
   );
 };
