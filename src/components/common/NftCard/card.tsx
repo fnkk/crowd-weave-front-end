@@ -1,5 +1,5 @@
 'use client'
-
+import { useEffect, useState} from 'react';
 import { Card, Button, Col, Row } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 
@@ -9,6 +9,7 @@ function NFTCard(props: { token:any }) {
     console.log(current_token_data);
 
     const { signAndSubmitTransaction } = useWallet();
+    const [campaigndetails, setcampaigndetails] = useState(null);
 
     /**
   * Converts an IPFS link to an HTTPS URL using a specified gateway.
@@ -60,6 +61,40 @@ function NFTCard(props: { token:any }) {
       };
 
 
+      useEffect(() => {
+
+        const getcollection  = async () => {
+          let ticketDatabody = {
+          "function":"0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::get_campaign_vals",
+          "type_arguments":[],
+          "arguments":[current_token_data?.token_data_id]
+        } 
+      
+        try {
+        const res = await fetch(
+          `https://fullnode.devnet.aptoslabs.com/v1/view`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': `Bearer ${auth}`
+            },
+            body: JSON.stringify(ticketDatabody),
+          }
+        );
+      
+        const colllection = await res.json();
+        setcampaigndetails(colllection[0]);
+        console.log("view fucntion res", colllection);
+        }
+        catch(error){
+          console.error("Error fetching nft data:", error);
+        }
+      }
+        getcollection();
+      }, [])
+
+
     return (
         <Card
             hoverable
@@ -67,6 +102,11 @@ function NFTCard(props: { token:any }) {
             cover={<img alt="example" src={httpsUri} />}
         >
             <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
+            <div>Start Time : {campaigndetails?campaigndetails[0]:''}</div>
+            <div>Min entry price : {campaigndetails?campaigndetails[1]:''}</div>
+            <div>Unit price : {campaigndetails?campaigndetails[2]:''}</div>
+            <div>Target : {campaigndetails?campaigndetails[3]:''}</div>
+            <div>Total supply : {campaigndetails?campaigndetails[4]:''}</div>
             <Button>Join</Button>
             <Button onClick={startCampaign}>Start</Button>
         </Card>
