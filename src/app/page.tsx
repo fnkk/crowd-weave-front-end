@@ -1,7 +1,23 @@
 "use client";
 import { SiWebmoney } from "react-icons/si";
+import { Aptos, Network, AptosConfig } from '@aptos-labs/ts-sdk';
+import { useEffect } from "react";
+import { useKeylessAccounts } from "../core/useKeylessAccounts";
+import GoogleLogo from "../components/GoogleLogo";
+import { collapseAddress } from "../core/utils";
 
+// pages/my-page.jsx
+import dynamic from 'next/dynamic';
+
+// 使用动态导入并禁用SSR
+const NoSSRComponent = dynamic(() => import('@/components/Redirect'), {
+  ssr: false,
+});
 export default function Home() {
+  const aptosConfig = new AptosConfig({ network: Network.DEVNET });
+  const aptos = new Aptos(aptosConfig);  // Only devnet supported as of now.
+  const { activeAccount, disconnectKeylessAccount } = useKeylessAccounts();
+
   return (
     <>
       <main className="flex justify-center items-center h-[100vh]">
@@ -19,7 +35,27 @@ export default function Home() {
           </div>
           <div className="justify-center flex"></div>
         </div>
+        <div>
+          <NoSSRComponent />
+          <div className="grid gap-2">
+            {activeAccount ? (
+              <div className="flex justify-center items-center border rounded-lg px-8 py-2 shadow-sm cursor-not-allowed">
+                <GoogleLogo />
+                {collapseAddress(activeAccount?.accountAddress.toString())}
+              </div>
+            ) : (
+              <p>Not logged in</p>
+            )}
+            <button
+              className="flex justify-center bg-red-50 items-center border border-red-200 rounded-lg px-8 py-2 shadow-sm shadow-red-300 hover:bg-red-100 active:scale-95 transition-all"
+              onClick={disconnectKeylessAccount}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       </main>
+
     </>
   );
 }
