@@ -2,25 +2,21 @@
 import {useState} from 'react';
 import {
   Button,
-  Cascader,
   DatePicker,
   Form,
   Input,
   InputNumber,
-  Mentions,
-  Select,
-  TreeSelect,
   message
 } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import useAptos from "@/context/useAptos";
-import { NFTStorage } from "nft.storage";
 import { useRouter } from 'next/router';
+import { NFTStorage } from "nft.storage";
 const client = new NFTStorage({ token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDFFODE2RTA3RjBFYTg4MkI3Q0I0MDQ2QTg4NENDQ0Q0MjA4NEU3QTgiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY3MzI0NTEzNDc3MywibmFtZSI6Im5mdCJ9.vP9_nN3dQHIkN9cVQH5KvCLNHRk3M2ZO4x2G99smofw" });
 import { removePrefix } from "../../../modules/ipfsUtil";
 
 const CreateProposal = () => {
-  const router = useRouter();
+  // const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const { aptos, moduleAddress } = useAptos();
   const { account, signAndSubmitTransaction } = useWallet();
@@ -83,7 +79,7 @@ const CreateProposal = () => {
       // wait for transaction
       await aptos.waitForTransaction({ transactionHash: response.hash });
       messageApi.success('You are succeed!');
-      router.push('/explore/ongoing-proposals');
+      // router.push('/explore/ongoing-proposals');
     } catch (error: any) {
       console.log('error:', error)
     }
