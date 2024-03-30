@@ -25,9 +25,9 @@ const Ongoing = () => {
     })
     console.log(res, '-----------------------------')
     setCollection(res[0])
-    fetchNft()
+    fetchNft(res[0])
   };
-  const fetchNft = async () => {
+  const fetchNft = async (id:any) => {
     const getCollectionTokensQuery = /* GraphQL */ `
       query CollectionTokens($collection_id: String, $limit: Int, $offset: Int) {
         current_token_datas_v2(
@@ -60,13 +60,14 @@ const Ongoing = () => {
       query: {
         query: getCollectionTokensQuery,
         variables: {
-          collection_id: collection,
+          collection_id: id,
           offset: 0, // TODO: use sort key and reverse
           limit: 100
         }
       }
     });
     console.log(response, '********************')
+
     setNftList(response.current_token_datas_v2)
   }
   useEffect(() => {
