@@ -10,6 +10,7 @@ function NFTCard(props: { token: any }) {
   const current_token_data = props.token
   console.log(current_token_data);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mileStone, setMileStone] = useState<any>([])
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
@@ -20,7 +21,32 @@ function NFTCard(props: { token: any }) {
       sm: { span: 14 },
     },
   };
+  const fetchDetail = async () => {
+    try {
+      const res = await aptos.view({
+        payload: {
+          function: `${moduleAddress}::cw::get_milestones_details`,
+          functionArguments: [
+            props.token.token_data_id
+          ],
+        }
+      })
+      if (res[0] && Array.isArray(res[0])) {
+        setMileStone(res[0].map((i: any, index: number) => {
+          return {
+            value: (index + 1).toString(),
+            label: i
+          }
+        }))
+      }
+    } catch (err) {
+      console.error(err)
+    }
+
+
+  }
   const showModal = () => {
+    fetchDetail()
     setIsModalOpen(true);
   };
 
@@ -66,7 +92,7 @@ function NFTCard(props: { token: any }) {
       const mintTransaction = {
         arguments: [current_token_data?.token_data_id],
         function:
-          "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::start_campaign",
+          `${moduleAddress}::cw::start_campaign`,
         type: "entry_function_payload",
         type_arguments: [],
       };
@@ -95,7 +121,7 @@ function NFTCard(props: { token: any }) {
       const mintTransaction = {
         arguments: [idfinal, current_token_data?.token_data_id],
         function:
-          "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::join_campaign",
+          `${moduleAddress}::cw::join_campaign`,
         type: "entry_function_payload",
         type_arguments: [],
       };
@@ -112,34 +138,33 @@ function NFTCard(props: { token: any }) {
     }
   };
 
- 
-    const milestoneCompletion = async (data: Array<any>) => {
-      if (!account) return [];
-      const transaction: InputTransactionData = {
-        data: {
-          function: `${moduleAddress}::cw::milestone_completion_proposal_v2`,
-          functionArguments: [...data]
-        }
-      }
-      try {
-        // sign and submit transaction to chain
-        const response = await signAndSubmitTransaction(transaction);
-        // wait for transaction
-        await aptos.waitForTransaction({ transactionHash: response.hash });
-        console.log(response, '-------+++++++++++++++----------')
 
-      } catch (error: any) {
-        console.log('error:', error)
+  const milestoneCompletion = async (data: Array<any>) => {
+    if (!account) return [];
+    const transaction: InputTransactionData = {
+      data: {
+        function: `${moduleAddress}::cw::milestone_completion_proposal_v2`,
+        functionArguments: [...data]
       }
     }
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      console.log(response, '-------+++++++++++++++----------')
 
-  
+    } catch (error: any) {
+      console.log('error:', error)
+    }
+  }
+
+
 
   const onFinish = (values: any) => {
-    console.log(props.token.token_data_id,values)
+    console.log(props.token.token_data_id, values)
     milestoneCompletion([
       props.token.token_data_id,
-      '1',
       values.expiration_secs,
       values.milestone,
       values.proof,
@@ -150,7 +175,7 @@ function NFTCard(props: { token: any }) {
 
     const getcollection = async () => {
       let ticketDatabody = {
-        "function": "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::get_campaign_vals",
+        "function": `${moduleAddress}::cw::get_campaign_vals`,
         "type_arguments": [],
         "arguments": [current_token_data?.token_data_id]
       }
@@ -197,19 +222,14 @@ function NFTCard(props: { token: any }) {
         <Button onClick={startCampaign}>Start</Button>
         <Button onClick={showModal}>milestone Completion</Button>
       </Card>
-      <Modal title="Basic Modal" open={isModalOpen}  onCancel={handleCancel} footer={null}>
+      <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
 
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
 
           <Form.Item label="milestone" name="milestone" rules={[{ required: true, message: 'Please input!' }]}>
             <Select
               style={{ width: 120 }}
-              options={[
-                { value: '1', label: 'stage1' },
-                { value: '2', label: 'stage2' },
-                { value: '3', label: 'stage3' },
-                { value: '4', label: 'stage4' },
-              ]}
+              options={mileStone}
             />
           </Form.Item>
           <Form.Item label="expiration_secs" name="expiration_secs" rules={[{ required: true, message: 'Please input!' }]}>

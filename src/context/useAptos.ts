@@ -4,7 +4,7 @@ import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 
 // 自定义Hook
 function useAptos() {
-  const moduleAddress = "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220";
+  const moduleAddress = "0xee9f3fe9e95aedae0a7b424b5ca82159440d14d5285eb1f3df2e4cc9a3d0eb51";
   
   // 使用useMemo来确保Aptos实例不会在每次渲染时都重新创建
   const aptos = useMemo(() => {
