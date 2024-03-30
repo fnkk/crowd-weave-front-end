@@ -90,7 +90,13 @@ const CreateProposal = () => {
   return (
     <div className="flex justify-center ">
       {contextHolder}
-      <div className="text-sm mt-8 py-8 px-8 rounded-md border mb-6 w-[660px]">
+      <div className="text-sm mt-8 py-8 px-8 rounded-md border mb-6 w-[660px]"
+      style={{
+        border: "1px solid #0162FF",
+        boxShadow: "inset -10px -10px 60px 0 rgba(255, 255, 255, 0.4)",
+        background: 'linear-gradient(0.25turn, #0162FF85, #D895DA)'
+      }}
+      >
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
           <Form.Item label="campaign_name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
@@ -120,7 +126,7 @@ const CreateProposal = () => {
             <Input />
           </Form.Item>
           <Form.Item label=" collection_uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
-            <div className="w-full h-48 ring-1 ring-gray-200 mb-10">
+            <div className="w-full h-48 ring-1 ring-gray-200 mb-10 mt-10">
                 {picture ? (
                   <>
                     <img
@@ -148,7 +154,7 @@ const CreateProposal = () => {
                       />
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 fill-white stroke-indigo-500"
+                        className="h-10 w-10 fill-white stroke-indigo-500 mt-10"
                         viewBox="0 0 32 32"
                         stroke="currentColor"
                         stroke-width="2"
