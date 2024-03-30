@@ -8,9 +8,11 @@ function NFTCard(props: { token: any }) {
   const { Meta } = Card;
   const { aptos, moduleAddress } = useAptos();
   const current_token_data = props.token
-  console.log(current_token_data);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [mileStone, setMileStone] = useState<any>([])
+  const [mileStoneList, setMileStoneList] = useState<any>([])
+  const [mileStonesNow, setMilestonesNow] = useState<any>(0)
+  const [isVotingOpen, setIsVotingOpen] = useState<any>()
+  const [isMilestonDown, setIsMilestonDown] = useState<any>(1)
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
@@ -32,7 +34,7 @@ function NFTCard(props: { token: any }) {
         }
       })
       if (res[0] && Array.isArray(res[0])) {
-        setMileStone(res[0].map((i: any, index: number) => {
+        setMileStoneList(res[0].map((i: any, index: number) => {
           return {
             value: (index + 1).toString(),
             label: i
@@ -45,6 +47,96 @@ function NFTCard(props: { token: any }) {
 
 
   }
+  const getMilestonesNow = async () => {
+    try {
+      const res = await aptos.view({
+        payload: {
+          function: `${moduleAddress}::cw::get_no_completed_milestones`,
+          functionArguments: [
+            props.token.token_data_id
+          ],
+        }
+      })
+      setMilestonesNow(res)
+    } catch (err) {
+      console.error(err)
+    }
+
+
+  }
+  const getIsVotingOpen = async () => {
+    try {
+      const res = await aptos.view({
+        payload: {
+          function: `${moduleAddress}::cw::is_voting_open`,
+          functionArguments: [
+            props.token.token_data_id
+          ],
+        }
+      })
+      setIsVotingOpen(res[0])
+    } catch (err) {
+      console.error(err)
+    }
+
+
+  }
+  const getIsMilestonDown = async () => {
+    try {
+      const res = await aptos.view({
+        payload: {
+          function: `${moduleAddress}::dao::how_many_more_votes_required`,
+          functionArguments: [
+            props.token.token_data_id
+          ],
+        }
+      })
+      setIsMilestonDown(res[0])
+    } catch (err) {
+      console.error(err)
+    }
+
+
+  }
+
+  const conclude_milestone = async () => {
+    if (!account) return [];
+    const transaction: InputTransactionData = {
+      data: {
+        function: `${moduleAddress}::cw::conclude_milestone`,
+        functionArguments: [props.token.token_data_id,(parseInt(mileStonesNow, 10) + 1).toString()]
+      }
+    }
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+
+    } catch (error: any) {
+      console.log('error:', error)
+    }
+  }
+  const Voting = async (type: string) => {
+    if (!account) return [];
+    const transaction: InputTransactionData = {
+      data: {
+        function: `${moduleAddress}::cw::vote_proposal`,
+        functionArguments: [props.token.token_data_id, (parseInt(mileStonesNow, 10) + 1).toString(), type]
+      }
+    }
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+
+    } catch (error: any) {
+      console.log('error:', error)
+    }
+  }
+
+
   const showModal = () => {
     fetchDetail()
     setIsModalOpen(true);
@@ -70,7 +162,6 @@ function NFTCard(props: { token: any }) {
   function convertIpfsToHttps(ipfsUrl: string, gateway: string = 'https://ipfs.io/ipfs/'): string {
     // Check if the URL starts with 'ipfs://'
     if (!ipfsUrl.startsWith('ipfs://')) {
-      console.log(ipfsUrl)
       throw new Error('Invalid IPFS URL');
     }
 
@@ -100,7 +191,6 @@ function NFTCard(props: { token: any }) {
       const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
         mintTransaction
       );
-      console.log("created game:", mintResponse);
       //   setstartbuttonclick(true);
     } catch (error) {
       console.error("Error handling", error);
@@ -129,7 +219,6 @@ function NFTCard(props: { token: any }) {
       const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
         mintTransaction
       );
-      console.log("created game:", mintResponse);
       //   setstartbuttonclick(true);
     } catch (error) {
       console.error("Error handling", error);
@@ -143,7 +232,7 @@ function NFTCard(props: { token: any }) {
     if (!account) return [];
     const transaction: InputTransactionData = {
       data: {
-        function: `${moduleAddress}::cw::milestone_completion_proposal_v2`,
+        function: `${moduleAddress}::cw::milestone_completion_proposal`,
         functionArguments: [...data]
       }
     }
@@ -152,7 +241,6 @@ function NFTCard(props: { token: any }) {
       const response = await signAndSubmitTransaction(transaction);
       // wait for transaction
       await aptos.waitForTransaction({ transactionHash: response.hash });
-      console.log(response, '-------+++++++++++++++----------')
 
     } catch (error: any) {
       console.log('error:', error)
@@ -162,45 +250,44 @@ function NFTCard(props: { token: any }) {
 
 
   const onFinish = (values: any) => {
-    console.log(props.token.token_data_id, values)
     milestoneCompletion([
       props.token.token_data_id,
-      values.expiration_secs,
       values.milestone,
       values.proof,
     ])
   }
 
-  useEffect(() => {
-
-    const getcollection = async () => {
-      let ticketDatabody = {
-        "function": `${moduleAddress}::cw::get_campaign_vals`,
-        "type_arguments": [],
-        "arguments": [current_token_data?.token_data_id]
-      }
-
-      try {
-        const res = await fetch(
-          `https://fullnode.devnet.aptoslabs.com/v1/view`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              // 'Authorization': `Bearer ${auth}`
-            },
-            body: JSON.stringify(ticketDatabody),
-          }
-        );
-
-        const colllection = await res.json();
-        setcampaigndetails(colllection[0]);
-        console.log("view fucntion res", colllection);
-      }
-      catch (error) {
-        console.error("Error fetching nft data:", error);
-      }
+  const getcollection = async () => {
+    let ticketDatabody = {
+      "function": `${moduleAddress}::cw::get_campaign_vals`,
+      "type_arguments": [],
+      "arguments": [current_token_data?.token_data_id]
     }
+
+    try {
+      const res = await fetch(
+        `https://fullnode.devnet.aptoslabs.com/v1/view`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // 'Authorization': `Bearer ${auth}`
+          },
+          body: JSON.stringify(ticketDatabody),
+        }
+      );
+
+      const colllection = await res.json();
+      setcampaigndetails(colllection[0]);
+    }
+    catch (error) {
+      console.error("Error fetching nft data:", error);
+    }
+  }
+  useEffect(() => {
+    getMilestonesNow();
+    getIsMilestonDown();
+    getIsVotingOpen();
     getcollection();
   }, [])
 
@@ -221,6 +308,9 @@ function NFTCard(props: { token: any }) {
         <Button onClick={joinCampaign}>Join</Button>
         <Button onClick={startCampaign}>Start</Button>
         <Button onClick={showModal}>milestone Completion</Button>
+        <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>
+        <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>
+        <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>
       </Card>
       <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
 
@@ -229,7 +319,7 @@ function NFTCard(props: { token: any }) {
           <Form.Item label="milestone" name="milestone" rules={[{ required: true, message: 'Please input!' }]}>
             <Select
               style={{ width: 120 }}
-              options={mileStone}
+              options={mileStoneList}
             />
           </Form.Item>
           <Form.Item label="expiration_secs" name="expiration_secs" rules={[{ required: true, message: 'Please input!' }]}>
