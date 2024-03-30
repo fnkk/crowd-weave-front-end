@@ -58,7 +58,7 @@ function NFTCard(props: { token: any }) {
           ],
         }
       })
-      setMilestonesNow(res)
+      setMilestonesNow(res[0])
     } catch (err) {
       console.error(err)
     }
@@ -105,7 +105,25 @@ function NFTCard(props: { token: any }) {
     const transaction: InputTransactionData = {
       data: {
         function: `${moduleAddress}::cw::conclude_milestone`,
-        functionArguments: [props.token.token_data_id,(parseInt(mileStonesNow, 10) + 1).toString()]
+        functionArguments: [props.token.token_data_id, (parseInt(mileStonesNow, 10) + 1).toString()]
+      }
+    }
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+
+    } catch (error: any) {
+      console.log('error:', error)
+    }
+  }
+  const conclude_campaign = async () => {
+    if (!account) return [];
+    const transaction: InputTransactionData = {
+      data: {
+        function: `${moduleAddress}::cw::conclude_campaign`,
+        functionArguments: [props.token.token_data_id]
       }
     }
     try {
@@ -289,7 +307,7 @@ function NFTCard(props: { token: any }) {
     getIsMilestonDown();
     getIsVotingOpen();
     getcollection();
-  }, [2000])
+  }, [])
 
 
   return (
@@ -308,14 +326,15 @@ function NFTCard(props: { token: any }) {
         <div>Target : {campaigndetails ? campaigndetails[3] : ''}</div>
         <div>Total supply : {campaigndetails ? campaigndetails[4] : ''}</div>
         <Button onClick={joinCampaign}>Join</Button>
-        {campaigndetails && campaigndetails[4] >= campaigndetails[3] && 
-            (
+        {campaigndetails && campaigndetails[4] >= campaigndetails[3] &&
+          (
             <Button onClick={startCampaign}>Start</Button>
-            )}
+          )}
         <Button onClick={showModal}>milestone Completion</Button>
         <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>
         <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>
         <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>
+        <Button disabled={mileStonesNow!=4} onClick={() => conclude_campaign()}>conclude_campaign</Button>
       </Card>
       <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
 
@@ -323,6 +342,7 @@ function NFTCard(props: { token: any }) {
 
           <Form.Item label="milestone" name="milestone" rules={[{ required: true, message: 'Please input!' }]}>
             <Select
+              defaultValue={mileStonesNow}
               style={{ width: 120 }}
               options={mileStoneList}
             />
