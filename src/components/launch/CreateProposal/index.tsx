@@ -1,4 +1,5 @@
 "use client";
+import {useState} from 'react';
 import {
   Button,
   Cascader,
@@ -13,11 +14,15 @@ import {
 } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import useAptos from "@/context/useAptos";
+import { NFTStorage } from "nft.storage";
+const client = new NFTStorage({ token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDFFODE2RTA3RjBFYTg4MkI3Q0I0MDQ2QTg4NENDQ0Q0MjA4NEU3QTgiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY3MzI0NTEzNDc3MywibmFtZSI6Im5mdCJ9.vP9_nN3dQHIkN9cVQH5KvCLNHRk3M2ZO4x2G99smofw" });
+import { removePrefix } from "../../../modules/ipfsUtil";
 
 const CreateProposal = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { aptos, moduleAddress } = useAptos();
   const { account, signAndSubmitTransaction } = useWallet();
+  const [picture, setpicture] = useState('');
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
@@ -39,7 +44,7 @@ const CreateProposal = () => {
       values.min_entry_price.toString(),
       values.unit_price.toString(),
       values.collection_name,
-      values.collection_uri,
+      picture,
       values.target.toString(),
       values.the_first_stage_goal,
       values.the_second_stage_goal,
@@ -47,6 +52,23 @@ const CreateProposal = () => {
       values.the_fourth_stage_goal,
     ])
   };
+
+  async function uploadImage(e:any) {
+    e.preventDefault();
+    try {
+      // setLoading(true);
+      const blobDataImage = new Blob([e.target.files[0]]);
+      const metaHash = await client.storeBlob(blobDataImage);
+      setpicture(`ipfs://${metaHash}`);
+      console.log("profilePictureUrl",metaHash)
+    } catch (error) {
+      console.log("Error uploading file: ", error);
+    } finally {
+      // setLoading(false);
+    }
+  }
+
+
   const createProposal = async (data: Array<any>) => {
     if (!account) return [];
     const transaction: InputTransactionData = {
@@ -99,7 +121,49 @@ const CreateProposal = () => {
             <Input />
           </Form.Item>
           <Form.Item label=" collection_uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
-            <Input />
+            <div className="w-full h-48 ring-1 ring-gray-200 mb-10">
+                {picture ? (
+                  <>
+                    <img
+                      alt="alt"
+                      src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
+                        picture
+                      )}`}
+                      className=""
+                      // width="200"
+                      // height="200"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <label
+                      htmlFor="upload"
+                      className="flex flex-col items-center gap-2 cursor-pointer -mt-4 ml-2"
+                    >
+                      <input
+                        id="upload"
+                        type="file"
+                        className="hidden invisible"
+                        onChange={uploadImage}
+                        accept="image/*"
+                      />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 fill-white stroke-indigo-500"
+                        viewBox="0 0 32 32"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </label>
+                  </>
+                )}
+              </div>
           </Form.Item>
           <Form.Item
             label="target"

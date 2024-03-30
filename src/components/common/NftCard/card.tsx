@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Col, Row, Modal, Form, Input, Select } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import useAptos from "@/context/useAptos";
+import { removePrefix } from "../../../modules/ipfsUtil";
 
 function NFTCard(props: { token: any }) {
   const { Meta } = Card;
@@ -78,8 +79,7 @@ function NFTCard(props: { token: any }) {
     const hash = ipfsUrl.slice(7); // Remove 'ipfs://' (7 characters)
     return `${gateway}${hash}`;
   }
-  const ipfsUri = current_token_data?.current_collection?.uri;
-  const httpsUri = ipfsUri ? convertIpfsToHttps(ipfsUri) : "404";
+  const ipfsUri = current_token_data?.token_uri;
 
   const startCampaign = async () => {
     // setloading(true);
@@ -202,7 +202,7 @@ function NFTCard(props: { token: any }) {
       }
     }
     getcollection();
-  }, [])
+  }, [2000])
 
 
   return (
@@ -210,7 +210,9 @@ function NFTCard(props: { token: any }) {
       <Card
         hoverable
         style={{ width: 240 }}
-        cover={<img alt="example" src={httpsUri} />}
+        cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
+          ipfsUri
+        )}`} />}
       >
         <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
         <div>Start Time : {campaigndetails ? campaigndetails[0] : ''}</div>
@@ -219,7 +221,10 @@ function NFTCard(props: { token: any }) {
         <div>Target : {campaigndetails ? campaigndetails[3] : ''}</div>
         <div>Total supply : {campaigndetails ? campaigndetails[4] : ''}</div>
         <Button onClick={joinCampaign}>Join</Button>
-        <Button onClick={startCampaign}>Start</Button>
+        {campaigndetails && campaigndetails[4] >= campaigndetails[3] && 
+            (
+            <Button onClick={startCampaign}>Start</Button>
+            )}
         <Button onClick={showModal}>milestone Completion</Button>
       </Card>
       <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
