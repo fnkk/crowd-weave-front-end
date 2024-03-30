@@ -61,6 +61,35 @@ function NFTCard(props: { token:any }) {
       };
 
 
+      const joinCampaign = async () => {
+        // setloading(true);
+        const id  = current_token_data?.token_name;
+        const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
+        const match = id.match(regex);
+        const idfinal = parseInt(match[1]);
+    
+        try {
+          const mintTransaction = {
+            arguments: [idfinal, current_token_data?.token_data_id],
+            function:
+              "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::join_campaign",
+            type: "entry_function_payload",
+            type_arguments: [],
+          };
+    
+          const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
+            mintTransaction
+          );
+          console.log("created game:", mintResponse);
+        //   setstartbuttonclick(true);
+        } catch (error) {
+          console.error("Error handling", error);
+        } finally {
+        //   setloading(false);
+        }
+      };
+
+
       useEffect(() => {
 
         const getcollection  = async () => {
@@ -107,7 +136,7 @@ function NFTCard(props: { token:any }) {
             <div>Unit price : {campaigndetails?campaigndetails[2]:''}</div>
             <div>Target : {campaigndetails?campaigndetails[3]:''}</div>
             <div>Total supply : {campaigndetails?campaigndetails[4]:''}</div>
-            <Button>Join</Button>
+            <Button onClick={joinCampaign}>Join</Button>
             <Button onClick={startCampaign}>Start</Button>
         </Card>
     )
