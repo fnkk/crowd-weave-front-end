@@ -1,162 +1,98 @@
 "use client";
-import { useState } from "react";
-import { useProposal } from "@/ContextProviders/ProposalProvider";
+import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
 import notFound from "@/components/Empty/notFound.json";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import { useAddress } from "@thirdweb-dev/react";
 import { enqueueSnackbar } from "notistack";
-import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
+import useAptos from "@/context/useAptos";
+import NFTCard from "@/components/common/NftCard/card";
 
 const Ongoing = () => {
-  const aptosConfig = new AptosConfig({ network: Network.TESTNET });
-  const aptos = new Aptos(aptosConfig);
-  // replace with your own address
-  const moduleAddress = "0xfbd0e6df8ee79607de7f4e421ff1bc6ae040bec42b7a54ba425c787292573b81";
+  const { aptos, moduleAddress } = useAptos();
   const { account, signAndSubmitTransaction } = useWallet();
-
+  const [nftList, setNftList] = useState<any>([]);
+  const [collection, setCollection] = useState<any>();
   const fetchList = async () => {
-    if (!account) return [];
-    try {
-      const todoListResource = await aptos.getAccountResource(
-        {
-          accountAddress: account?.address,
-          resourceType: `${moduleAddress}::cw::State`
+    // if (!account) return [];
+    const res = await aptos.view({
+      payload: {
+        function: `${moduleAddress}::cw::get_collection_address`,
+        functionArguments: []
+      }
+    })
+    console.log(res, '-----------------------------')
+    setCollection(res[0])
+    fetchNft()
+  };
+  const fetchNft = async () => {
+    const getCollectionTokensQuery = /* GraphQL */ `
+      query CollectionTokens($collection_id: String, $limit: Int, $offset: Int) {
+        current_token_datas_v2(
+          where: { collection_id: { _eq: $collection_id } }
+          order_by: { token_name: asc }
+          limit: $limit
+          offset: $offset
+        ) {
+          description
+          largest_property_version_v1
+          last_transaction_timestamp
+          token_data_id
+          token_name
+          token_standard
+          token_uri
         }
-      );
-      const tokens = await aptos.getAccountOwnedTokens({ accountAddress: account?.address });
-      console.log('tokens:', tokens)
-      // tasks table handle
-      // const tableHandle = (todoListResource as any).tasks.handle;
-      // // tasks table counter
-      // const taskCounter = (todoListResource as any).task_counter;
-
-      // let tasks = [];
-      // let counter = 1;
-      // while (counter <= taskCounter) {
-      //   const tableItem = {
-      //     key_type: "u64",
-      //     value_type: `${moduleAddress}::todolist::Task`,
-      //     key: `${counter}`,
-      //   };
-      //   const task = await aptos.getTableItem({ handle: tableHandle, data: tableItem });
-      //   tasks.push(task);
-      //   counter++;
-      // }
-
-    } catch (e: any) {
-    }
-  };
-
-
-
-
-
-
-  const [selectedValue, setSelectedValue] = useState<any>(null);
-  const { proposal, votes, setVotes, votesPercentage, setVotesPercentage } =
-    useProposal();
-  const address = useAddress();
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-
-    // Update the votes count based on the user's vote
-    const newVotes = { ...votes };
-    if (selectedValue === "like") {
-      newVotes.likes += 1;
-    } else {
-      newVotes.dislikes += 1;
-    }
-    setVotes(newVotes);
-
-    // Calculate and update the votes percentage
-    const totalVotes = newVotes.likes + newVotes.dislikes;
-    const percentage = (newVotes.likes / totalVotes) * 100;
-    setVotesPercentage(percentage);
-
-    // Display the vote alert
-    enqueueSnackbar(`${selectedValue} `, {
-      variant: `${selectedValue == "like" ? "success" : "error"}`,
+      }
+`;
+    const response: {
+      current_token_datas_v2: {
+        description: string;
+        largest_property_version_v1: number | null;
+        last_transaction_timestamp: string;
+        token_data_id: string;
+        token_name: string;
+        token_standard: 'v1' | 'v2';
+        token_uri: string;
+      }[];
+    } = await aptos.queryIndexer({
+      query: {
+        query: getCollectionTokensQuery,
+        variables: {
+          collection_id: collection,
+          offset: 0, // TODO: use sort key and reverse
+          limit: 100
+        }
+      }
     });
-  };
+    console.log(response, '********************')
+    setNftList(response.current_token_datas_v2)
+  }
+  useEffect(() => {
+     fetchList()
+  }, [])
 
-  if (!proposal)
+
+  if (1)
     return (
       <div className="flex flex-col gap-4 justify-center items-center mt-20">
-        <Lottie animationData={notFound} loop={true} />
-        <div className="text-lg">No ongoing proposal</div>
+
+        {nftList.map((item: any, index: any) => {
+          return (
+            <NFTCard token={item} key={index} />
+          )
+        })}
+        <button onClick={fetchList}>  test</button>
+        <button onClick={fetchNft}>  getNft</button>
       </div>
     );
 
   return (
     <>
-      <div className="flex justify-center mt-8 ">
-        <div>
-          {/* --------------------------------------- proposal card -------------------  */}
-          <div className="w-[500px text-sm  border rounded-sm py-8 px-8 max-w-xl flex flex-col gap-4">
-            <div className=" text-2xl mb-1 font-semibold">{proposal.title}</div>
-            <div>{proposal.description}</div>
-            <div>Price Per NFT: {proposal.priceperNFT} MATIC </div>
-            <div>Funding Goal: {proposal.funding_goal} MATIC</div>
-            <div>Valid Till: {proposal.date.$d.toDateString()}</div>
-            <div className="">Created by: {address}</div>
-
-            {/* --------------------------------------  */}
-            <form onSubmit={handleSubmit}>
-              <div className="flex gap-6 justify-center">
-                <div>
-                  <label>
-                    <input
-                      type="radio"
-                      value="dislike"
-                      id="response"
-                      checked={selectedValue === "dislike"}
-                      onChange={() => setSelectedValue("dislike")}
-                      required
-                      className="hidden"
-                    />
-                    <div
-                      className={`w-12 h-12 flex justify-center items-center text-lg hover:text-2xl hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${selectedValue === "dislike" && "border-blue-500 "
-                        }`}
-                    >
-                      👎
-                    </div>
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    <input
-                      id="response"
-                      type="radio"
-                      value="like"
-                      checked={selectedValue === "like"}
-                      onChange={() => setSelectedValue("like")}
-                      required
-                      className="hidden"
-                    />
-                    <div
-                      className={`w-12 h-12 flex  text-lg justify-center items-center hover:text-2xl  hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${selectedValue === "like" && "border-blue-500"
-                        }`}
-                    >
-                      👍
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex justify-center mt-4">
-                <Button variant="primary" size="md" type="submit">
-                  Vote
-                </Button>
-              </div>
-            </form>
-            {/* --------------------------------------  */}
-          </div>
-
-          {/* --------------------------------------- proposal card -------------------  */}
-        </div>
+      <div className="flex flex-col gap-4 justify-center items-center mt-20">
+        <Lottie animationData={notFound} loop={true} />
+        <div className="text-lg">No ongoing proposal</div>
       </div>
     </>
   );

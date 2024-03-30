@@ -10,14 +10,11 @@ import {
   Select,
   TreeSelect,
 } from 'antd';
-import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
-
+import useAptos from "@/context/useAptos";
 
 const CreateProposal = () => {
-  const aptosConfig = new AptosConfig({ network: Network.DEVNET });
-  const aptos = new Aptos(aptosConfig);
-  const moduleAddress = "0xfbd0e6df8ee79607de7f4e421ff1bc6ae040bec42b7a54ba425c787292573b81";
+  const { aptos, moduleAddress } = useAptos();
   const { account, signAndSubmitTransaction } = useWallet();
   const formItemLayout = {
     labelCol: {
@@ -39,9 +36,7 @@ const CreateProposal = () => {
       values.min_entry_price.toString(),
       values.unit_price.toString(),
       values.collection_name,
-      values.collection_desc,
       values.collection_uri,
-      ['2','4','6'],
       values.target.toString(),
     ])
   };
@@ -93,13 +88,6 @@ const CreateProposal = () => {
           </Form.Item>
           <Form.Item label="collection_name" name="collection_name" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
-          </Form.Item>
-          <Form.Item
-            label="collection_desc"
-            name="collection_desc"
-            rules={[{ required: true, message: 'Please input!' }]}
-          >
-            <Input.TextArea />
           </Form.Item>
           <Form.Item label=" collection_uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
