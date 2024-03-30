@@ -1,9 +1,15 @@
 'use client'
 
 import { Card, Button, Col, Row } from 'antd';
+import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
+
 function NFTCard(props: { token:any }) {
     const { Meta } = Card;
     const  current_token_data  = props.token
+    console.log(current_token_data);
+
+    const { signAndSubmitTransaction } = useWallet();
+
     /**
   * Converts an IPFS link to an HTTPS URL using a specified gateway.
   * 
@@ -24,6 +30,36 @@ function NFTCard(props: { token:any }) {
     }
     const ipfsUri = current_token_data?.current_collection?.uri;
     const httpsUri = ipfsUri ? convertIpfsToHttps(ipfsUri) : "404";
+
+    const startCampaign = async () => {
+        // setloading(true);
+        const id  = current_token_data?.token_name;
+        const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
+        const match = id.match(regex);
+        const idfinal = parseInt(match[1]);
+    
+        try {
+          const mintTransaction = {
+            arguments: [current_token_data?.token_data_id],
+            function:
+              "0xcfcdcdf5798fd485e834f4cdf657685a68746bad02f439880f6707b0ccc57220::cw::start_campaign",
+            type: "entry_function_payload",
+            type_arguments: [],
+          };
+    
+          const mintResponse = await (window as any).aptos.signAndSubmitTransaction(
+            mintTransaction
+          );
+          console.log("created game:", mintResponse);
+        //   setstartbuttonclick(true);
+        } catch (error) {
+          console.error("Error handling", error);
+        } finally {
+        //   setloading(false);
+        }
+      };
+
+
     return (
         <Card
             hoverable
@@ -32,7 +68,7 @@ function NFTCard(props: { token:any }) {
         >
             <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
             <Button>Join</Button>
-            <Button>Start</Button>
+            <Button onClick={startCampaign}>Start</Button>
         </Card>
     )
 }
