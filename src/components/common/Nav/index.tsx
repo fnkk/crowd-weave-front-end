@@ -2,9 +2,15 @@ import React, { FC, useState } from "react";
 import { SiWebmoney } from "react-icons/si";
 import Button from "@/components/common/Button";
 import Link from "next/link";
-import { ConnectWallet, lightTheme } from "@thirdweb-dev/react";
+import { WalletSelector } from "@aptos-labs/wallet-adapter-ant-design";
+import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
+import { useEffect } from "react";
+import { useKeylessAccounts } from "@/core/useKeylessAccounts";
+import GoogleLogo from "@/components/GoogleLogo";
+import { collapseAddress } from "@/core/utils";
 
 const Nav = ({}) => {
+  const { activeAccount, disconnectKeylessAccount } = useKeylessAccounts();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navLinks = [
     {
@@ -42,7 +48,7 @@ const Nav = ({}) => {
         <div className="text-2xl">
           <SiWebmoney />
         </div>
-        <div className="text-xl font-semibold">TokenFest</div>
+        <div className="text-xl font-semibold">CrowdWeave</div>
       </div>
 
       <div className="flex gap-4 items-center">
@@ -73,14 +79,17 @@ const Nav = ({}) => {
             )}
           </div>
         ))}
-        <ConnectWallet
-          theme={lightTheme({
-            colors: { primaryButtonBg: "#3B82F6" },
-          })}
-          switchToActiveChain={true}
-          modalSize={"wide"}
-          welcomeScreen={{ title: "TokenFest" }}
-        />
+        <WalletSelector/>
+        <div className="grid gap-2">
+            {activeAccount ? (
+              <div onClick={disconnectKeylessAccount} className="flex justify-center items-center border rounded-lg px-8 py-2 shadow-sm cursor-not-allowed">
+                <GoogleLogo />
+                {collapseAddress(activeAccount?.accountAddress.toString())}
+              </div>
+            ) : (
+              <Link href={'/login'}>Login with google</Link >
+            )}
+          </div>
       </div>
     </div>
   );

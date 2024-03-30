@@ -7,8 +7,54 @@ import Link from "next/link";
 import Button from "@/components/common/Button";
 import { useAddress } from "@thirdweb-dev/react";
 import { enqueueSnackbar } from "notistack";
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
+import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 
 const Ongoing = () => {
+  const aptosConfig = new AptosConfig({ network: Network.TESTNET });
+  const aptos = new Aptos(aptosConfig);
+  // replace with your own address
+  const moduleAddress = "0xfbd0e6df8ee79607de7f4e421ff1bc6ae040bec42b7a54ba425c787292573b81";
+  const { account, signAndSubmitTransaction } = useWallet();
+
+  const fetchList = async () => {
+    if (!account) return [];
+    try {
+      const todoListResource = await aptos.getAccountResource(
+        {
+          accountAddress: account?.address,
+          resourceType: `${moduleAddress}::cw::State`
+        }
+      );
+      const tokens = await aptos.getAccountOwnedTokens({ accountAddress: account?.address });
+      console.log('tokens:', tokens)
+      // tasks table handle
+      // const tableHandle = (todoListResource as any).tasks.handle;
+      // // tasks table counter
+      // const taskCounter = (todoListResource as any).task_counter;
+
+      // let tasks = [];
+      // let counter = 1;
+      // while (counter <= taskCounter) {
+      //   const tableItem = {
+      //     key_type: "u64",
+      //     value_type: `${moduleAddress}::todolist::Task`,
+      //     key: `${counter}`,
+      //   };
+      //   const task = await aptos.getTableItem({ handle: tableHandle, data: tableItem });
+      //   tasks.push(task);
+      //   counter++;
+      // }
+
+    } catch (e: any) {
+    }
+  };
+
+
+
+
+
+
   const [selectedValue, setSelectedValue] = useState<any>(null);
   const { proposal, votes, setVotes, votesPercentage, setVotesPercentage } =
     useProposal();
@@ -72,9 +118,8 @@ const Ongoing = () => {
                       className="hidden"
                     />
                     <div
-                      className={`w-12 h-12 flex justify-center items-center text-lg hover:text-2xl hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${
-                        selectedValue === "dislike" && "border-blue-500 "
-                      }`}
+                      className={`w-12 h-12 flex justify-center items-center text-lg hover:text-2xl hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${selectedValue === "dislike" && "border-blue-500 "
+                        }`}
                     >
                       👎
                     </div>
@@ -92,9 +137,8 @@ const Ongoing = () => {
                       className="hidden"
                     />
                     <div
-                      className={`w-12 h-12 flex  text-lg justify-center items-center hover:text-2xl  hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${
-                        selectedValue === "like" && "border-blue-500"
-                      }`}
+                      className={`w-12 h-12 flex  text-lg justify-center items-center hover:text-2xl  hover:border-blue-500 py-2 border  rounded-sm cursor-pointer ${selectedValue === "like" && "border-blue-500"
+                        }`}
                     >
                       👍
                     </div>

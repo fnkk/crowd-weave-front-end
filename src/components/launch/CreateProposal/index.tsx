@@ -1,179 +1,125 @@
 "use client";
+import {
+  Button,
+  Cascader,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Mentions,
+  Select,
+  TreeSelect,
+} from 'antd';
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
+import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import Button from "@/components/common/Button";
-import { Input, InputNumber, Radio, DatePicker } from "antd";
-import { useProposal } from "@/ContextProviders/ProposalProvider";
-import { enqueueSnackbar } from "notistack";
 
 const CreateProposal = () => {
-  const { setProposal } = useProposal();
-
-  interface FormMessage {
-    description: string;
-    title: string;
-    priceperNFT: number;
-    funding_goal: number;
-    proposal_type: string;
-    date: any;
-  }
-  const initialValues: FormMessage = {
-    title: "",
-    description: "",
-    priceperNFT: 1,
-    funding_goal: 20,
-    proposal_type: "",
-    date: ``,
+  const aptosConfig = new AptosConfig({ network: Network.DEVNET });
+  const aptos = new Aptos(aptosConfig);
+  const moduleAddress = "0xfbd0e6df8ee79607de7f4e421ff1bc6ae040bec42b7a54ba425c787292573b81";
+  const { account, signAndSubmitTransaction } = useWallet();
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 10 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 14 },
+    },
   };
+  const { RangePicker } = DatePicker;
+  const onFinish = (values: any) => {
+    console.log(6666)
+    console.log(values);
+    createProposal([
+      values.campaign_name,
+      '202020202',
+      values.min_entry_price.toString(),
+      values.unit_price.toString(),
+      values.collection_name,
+      values.collection_desc,
+      values.collection_uri,
+      ['2','4','6'],
+      values.target.toString(),
+    ])
+  };
+  const createProposal = async (data: Array<any>) => {
+    if (!account) return [];
+    const transaction: InputTransactionData = {
+      data: {
+        function: `${moduleAddress}::cw::create_campaign`,
+        functionArguments: [...data]
+      }
+    }
+    try {
+      // sign and submit transaction to chain
+      const response = await signAndSubmitTransaction(transaction);
+      // wait for transaction
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+    } catch (error: any) {
+      console.log('error:', error)
+    }
+  }
   return (
     <div className="flex justify-center">
-      <div className="text-sm mt-8  py-8 px-8 max-w-lg rounded-md border mb-6 ">
-        <div className="flex justify-center">
-          <Formik
-            initialValues={initialValues}
-            onSubmit={(values, actions) => {
-              setProposal(values);
-              enqueueSnackbar(`${values.title} has been created`, {
-                variant: "success",
-              });
-              actions.setSubmitting(false);
-            }}
+      <div className="text-sm mt-8  py-8 px-8 rounded-md border mb-6 ">
+
+        <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
+          <Form.Item label="campaign_name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="start_time"
+            name="start_time"
+            rules={[{ required: true, message: 'Please input!' }]}
           >
-            {({ isSubmitting, setFieldValue, values }) => (
-              <Form>
-                <div className="text-center text-2xl mb-1  font-semibold">
-                  Submit Proposal
-                </div>
-                <div className="text-center mb-6 italic">
-                  Submit your project proposals and ideas for community votes
-                  and crowdfunding
-                </div>
-                <div className="flex flex-col gap-6">
-                  {/* ------------------------  */}
-                  <div>
-                    <label className="font-medium" htmlFor="title">
-                      Proposal Title
-                    </label>
-                    <div className="mt-2">
-                      <Input
-                        required
-                        value={values.title}
-                        onChange={(e: { target: { value: string } }) => {
-                          setFieldValue("title", e.target.value);
-                        }}
-                      />
-                    </div>
-                  </div>
-                  {/* -------------  */}
+            <DatePicker format="YYYY-MM-DD" />
+          </Form.Item>
+          <Form.Item
+            label="min_entry_price"
+            name="min_entry_price"
+            rules={[{ required: true, message: 'Please input!' }]}
+          >
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
+            label="unit_price"
+            name="unit_price"
+            rules={[{ required: true, message: 'Please input!' }]}
+          >
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item label="collection_name" name="collection_name" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="collection_desc"
+            name="collection_desc"
+            rules={[{ required: true, message: 'Please input!' }]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+          <Form.Item label=" collection_uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="target"
+            name="target"
+            rules={[{ required: true, message: 'Please input!' }]}
+          >
+            <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
 
-                  {/* ------------------------  */}
-                  <div>
-                    <label className="font-medium" htmlFor="description">
-                      Description
-                    </label>
-                    <div className=" mt-2">
-                      <Input.TextArea
-                        required
-                        value={values.description}
-                        onChange={(e: { target: { value: string } }) => {
-                          setFieldValue("description", e.target.value);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* -------------  */}
-                  <div className="flex items-center gap-8">
-                    {/* ------------------------  */}
-                    <div>
-                      <label className="font-medium" htmlFor="priceperNFT">
-                        Price per NFT
-                      </label>
-                      <div className="mt-2">
-                        <InputNumber
-                          required
-                          value={values.priceperNFT}
-                          onChange={(e) => {
-                            setFieldValue("priceperNFT", e);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* -------------  */}
-
-                    {/* ------------------------  */}
-                    <div>
-                      <label className="font-medium" htmlFor="funding_goal">
-                        Funding Goal
-                      </label>
-                      <div className="mt-2">
-                        <InputNumber
-                          required
-                          value={values.funding_goal}
-                          onChange={(e) => {
-                            setFieldValue("funding_goal", e);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* -------------  */}
-                  </div>
-                  {/* ------------ */}
-                  <Radio.Group
-                    onChange={(e) => {
-                      setFieldValue("proposal_type", e.target.value);
-                    }}
-                    value={values.proposal_type}
-                  >
-                    <Radio value={"collab"} className="!font-raleway">
-                      {" "}
-                      TokenFest Collab
-                    </Radio>
-                    <Radio value={"holder"} className="!font-raleway">
-                      {" "}
-                      TokenFest Holder
-                    </Radio>
-                  </Radio.Group>
-
-                  {/* ----------  */}
-
-                  {/* ----------------------  */}
-                  <div>
-                    <div>
-                      <label htmlFor="date" className="block mb-2">
-                        Valid till
-                      </label>
-
-                      <DatePicker
-                        onChange={(e) => {
-                          setFieldValue("date", e);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* ---------------------- */}
-                </div>
-
-                <div className="flex justify-center mt-5">
-                  <Button
-                    className="flex justify-center"
-                    variant="primary"
-                    size="md"
-                    type="submit"
-                    _isSubmitting={isSubmitting}
-                    disabled={isSubmitting}
-                  >
-                    Create Proposal
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
+          <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
+
     </div>
   );
 };

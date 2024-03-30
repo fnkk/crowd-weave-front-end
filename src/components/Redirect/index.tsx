@@ -28,7 +28,7 @@ function CallbackPage() {
 
     return (
         <div>
-                Redirecting...
+                {/* Redirecting... */}
         </div>
     );
 }
