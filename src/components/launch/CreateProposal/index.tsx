@@ -38,6 +38,10 @@ const CreateProposal = () => {
       values.collection_name,
       values.collection_uri,
       values.target.toString(),
+      values.the_first_stage_goal,
+      values.the_second_stage_goal,
+      values.the_third_stage_goal,
+      values.the_fourth_stage_goal,
     ])
   };
   const createProposal = async (data: Array<any>) => {
@@ -58,8 +62,8 @@ const CreateProposal = () => {
     }
   }
   return (
-    <div className="flex justify-center">
-      <div className="text-sm mt-8  py-8 px-8 rounded-md border mb-6 ">
+    <div className="flex justify-center ">
+      <div className="text-sm mt-8 py-8 px-8 rounded-md border mb-6 w-[660px]">
 
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
           <Form.Item label="campaign_name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
@@ -98,6 +102,19 @@ const CreateProposal = () => {
             rules={[{ required: true, message: 'Please input!' }]}
           >
             <InputNumber style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item label="first stage goal" name="the_first_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="second stage goal" name="the_second_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="third stage goal" name="the_third_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="fourth stage goal" name="the_fourth_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+            <Input />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
