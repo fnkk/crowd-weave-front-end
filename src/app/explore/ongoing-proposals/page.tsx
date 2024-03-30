@@ -1,3 +1,4 @@
+'use client'
 import Ongoing from "@/components/explore/Ongoing";
 import React from "react";
 
