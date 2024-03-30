@@ -314,12 +314,45 @@ function NFTCard(props: { token: any }) {
     <>
       <Card
         hoverable
-        style={{ width: 240 }}
+        style={{
+          border: "1px solid #0162FF",
+          boxShadow: "inset -10px -10px 60px 0 rgba(255, 255, 255, 0.4)",
+          background: '#DCBFFF',
+          width: 400
+        }}
         cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
           ipfsUri
         )}`} />}
       >
         <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
+        <div className="flex justify-between">
+          <div>
+        <div>Start Time : {campaigndetails ? campaigndetails[0] : ''}</div>
+        <div>Min entry price : {campaigndetails ? campaigndetails[1] : ''}</div>
+        <div>Unit price : {campaigndetails ? campaigndetails[2] : ''}</div>
+        </div>
+        <div>
+        <div>Target : {campaigndetails ? campaigndetails[3] : ''}</div>
+        <div>Total supply : {campaigndetails ? campaigndetails[4] : ''}</div>
+        </div>
+        </div>
+
+        <div className="flex justify-between">
+        <Button onClick={joinCampaign}>Join</Button>
+        {campaigndetails && campaigndetails[4] >= campaigndetails[3] &&
+          (
+            <Button onClick={startCampaign}>Start</Button>
+          )}
+          </div>
+        <Button onClick={showModal}>milestone Completion</Button>
+        <div className="flex justify-between">
+        <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>
+        <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>
+        </div>
+        <div className="flex justify-between">
+        <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>
+        <Button disabled={mileStonesNow!=4} onClick={() => conclude_campaign()}>conclude_campaign</Button>
+        </div>
         <div className="space-y-2">
           <div>Start Time: <span className="font-semibold">{campaigndetails ? campaigndetails[0] : ''}</span></div>
           <div>Min entry price: <span className="font-semibold">{campaigndetails ? campaigndetails[1] : ''}</span></div>
