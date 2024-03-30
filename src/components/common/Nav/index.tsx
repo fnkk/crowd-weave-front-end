@@ -8,9 +8,12 @@ import { useEffect } from "react";
 import { useKeylessAccounts } from "@/core/useKeylessAccounts";
 import GoogleLogo from "@/components/GoogleLogo";
 import { collapseAddress } from "@/core/utils";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
-const Nav = ({}) => {
+
+const Nav = ({ }) => {
   const { activeAccount, disconnectKeylessAccount } = useKeylessAccounts();
+  const { account, signAndSubmitTransaction } = useWallet();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navLinks = [
     {
@@ -28,7 +31,7 @@ const Nav = ({}) => {
     {
       title: "Dashboard",
       subItems: [
-        { title: "My Proposals", path: "/dashboardmy-proposal" },
+        { title: "My Proposals", path: "/dashboard/my-proposal" },
       ],
     },
   ];
@@ -53,9 +56,8 @@ const Nav = ({}) => {
             {navItem.title}
             {navItem.subItems && (
               <div
-                className={`absolute left-0 w-48 py-2 px-2 bg-white rounded-md shadow-xl  ${
-                  activeDropdown === navItem.title ? "block" : "hidden"
-                }`}
+                className={`absolute left-0 w-48 py-2 px-2 bg-white rounded-md shadow-xl  ${activeDropdown === navItem.title ? "block" : "hidden"
+                  }`}
               >
                 {navItem.subItems.map((subItem) => (
                   <Link
@@ -70,17 +72,17 @@ const Nav = ({}) => {
             )}
           </div>
         ))}
-        <WalletSelector/>
-        <div className="grid gap-2">
-            {activeAccount ? (
-              <div onClick={disconnectKeylessAccount} className="flex justify-center items-center border rounded-lg px-8 py-2 shadow-sm cursor-not-allowed">
-                <GoogleLogo />
-                {collapseAddress(activeAccount?.accountAddress.toString())}
-              </div>
-            ) : (
-              <Link href={'/login'}>Login with google</Link >
-            )}
-          </div>
+        {!activeAccount?<WalletSelector />:''}
+        {!account ? <div className="grid gap-2">
+          {activeAccount ? (
+            <div onClick={disconnectKeylessAccount} className="flex justify-center items-center border rounded-lg px-8 py-2 shadow-sm cursor-not-allowed">
+              <GoogleLogo />
+              {collapseAddress(activeAccount?.accountAddress.toString())}
+            </div>
+          ) : (
+            <Link href={'/login'}>Login with google</Link >
+          )}
+        </div> : ''}
       </div>
     </div>
   );

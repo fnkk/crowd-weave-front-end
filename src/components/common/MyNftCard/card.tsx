@@ -334,10 +334,10 @@ function NFTCard(props: { token: any }) {
               <Button onClick={startCampaign}>Start</Button>
             )}
           <Button onClick={showModal}>milestone Completion</Button>
-          {isVotingOpen && <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>}
-          {isVotingOpen && <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>}
-          {isMilestonDown && <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>}
-          {mileStonesNow == 4 && <Button disabled={mileStonesNow != 4} onClick={() => conclude_campaign()}>conclude_campaign</Button>}
+          <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>
+          <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>
+          <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>
+          <Button disabled={mileStonesNow != 4} onClick={() => conclude_campaign()}>conclude_campaign</Button>
         </div>
 
       </Card>

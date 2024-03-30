@@ -1,6 +1,9 @@
 import axios from "axios";
 
 export const removePrefix = (uri) => {
+  if(!uri){
+    return ''
+  }
   return uri.substring(7, uri.length);
 };
 
