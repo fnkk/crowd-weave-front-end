@@ -1,3 +1,4 @@
+'use client'
 import CreateProposal from "@/components/launch/CreateProposal";
 import React from "react";
 
