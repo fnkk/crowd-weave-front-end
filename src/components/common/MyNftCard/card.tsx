@@ -5,10 +5,11 @@ import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-rea
 import useAptos from "@/context/useAptos";
 import { removePrefix } from "../../../modules/ipfsUtil";
 
-function NFTCard(props: { token: any }) {
+function NFTCard(props: { token: any, key:any }) {
   const { Meta } = Card;
   const { aptos, moduleAddress } = useAptos();
-  const current_token_data = props.token
+  const current_token_data = props.token;
+  const key = props.key;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mileStoneList, setMileStoneList] = useState<any>([])
   const [mileStonesNow, setMilestonesNow] = useState<any>(0)
@@ -316,62 +317,13 @@ function NFTCard(props: { token: any }) {
         hoverable
         style={{ width: 240 }}
         cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
-          ipfsUri
-        )}`} />}
+          current_token_data?.token_uri)}`} />}
       >
         <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
-        <div className="space-y-2">
-          <div>Start Time: <span className="font-semibold">{campaigndetails ? campaigndetails[0] : ''}</span></div>
-          <div>Min entry price: <span className="font-semibold">{campaigndetails ? campaigndetails[1] : ''}</span></div>
-          <div>Unit price: <span className="font-semibold">{campaigndetails ? campaigndetails[2] : ''}</span></div>
-          <div>Target: <span className="font-semibold">{campaigndetails ? campaigndetails[3] : ''}</span></div>
-          <div>Total supply: <span className="font-semibold">{campaigndetails ? campaigndetails[4] : ''}</span></div>
-        </div>
-        <div className='flex flex-col gap-2 mt-4'>
-          <Button onClick={joinCampaign}>Join</Button>
-          {campaigndetails && campaigndetails[4] >= campaigndetails[3] &&
-            (
-              <Button onClick={startCampaign}>Start</Button>
-            )}
-          <Button onClick={showModal}>milestone Completion</Button>
-          <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>
-          <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>
-          <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>
-          <Button disabled={mileStonesNow != 4} onClick={() => conclude_campaign()}>conclude_campaign</Button>
-        </div>
-
+        <div>Name: {current_token_data[key]?.token_description}</div>
+    
       </Card>
-      <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
-
-        <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
-
-          <Form.Item label="milestone" name="milestone" rules={[{ required: true, message: 'Please input!' }]}>
-            <Select
-              defaultValue={mileStonesNow}
-              style={{ width: 120 }}
-              options={mileStoneList}
-            />
-          </Form.Item>
-          <Form.Item label="expiration_secs" name="expiration_secs" rules={[{ required: true, message: 'Please input!' }]}>
-            <Input />
-          </Form.Item>
-
-
-          <Form.Item label=" proof" name="proof" rules={[{ required: true, message: 'Please input!' }]}>
-            <Input />
-          </Form.Item>
-
-
-
-          <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </>
-
+      </>
   )
 }
 
