@@ -190,6 +190,7 @@ function NFTCard(props: { token: any, key:any }) {
     return `${gateway}${hash}`;
   }
   const ipfsUri = current_token_data?.token_uri;
+  console.log(ipfsUri);
 
   const startCampaign = async () => {
     // setloading(true);
@@ -317,7 +318,7 @@ function NFTCard(props: { token: any, key:any }) {
         hoverable
         style={{ width: 240 }}
         cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
-          current_token_data?.token_uri)}`} />}
+          current_token_data?.token_uri)}/CW_LOGO.png`} />}
       >
         <Meta title={current_token_data?.token_name} description={current_token_data?.description} />
     
