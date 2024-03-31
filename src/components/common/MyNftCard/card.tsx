@@ -319,8 +319,7 @@ function NFTCard(props: { token: any, key:any }) {
         cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
           current_token_data?.token_uri)}`} />}
       >
-        <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
-        <div>Name: {current_token_data[key]?.token_description}</div>
+        <Meta title={current_token_data?.token_name} description={current_token_data?.description} />
     
       </Card>
       </>
