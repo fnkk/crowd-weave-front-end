@@ -1,15 +1,18 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { Card, Button, Col, Row, Modal, Form, Input, Select } from 'antd';
+import { Card, Button, Col, InputNumber, Row, Modal, Form, Input, Select, message } from 'antd';
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import useAptos from "@/context/useAptos";
 import { removePrefix } from "../../../modules/ipfsUtil";
 
+
 function NFTCard(props: { token: any }) {
+  const [messageApi, contextHolder] = message.useMessage();
   const { Meta } = Card;
   const { aptos, moduleAddress } = useAptos();
   const current_token_data = props.token
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [mileStoneList, setMileStoneList] = useState<any>([])
   const [mileStonesNow, setMilestonesNow] = useState<any>(0)
   const [isVotingOpen, setIsVotingOpen] = useState<any>()
@@ -116,6 +119,8 @@ function NFTCard(props: { token: any }) {
 
     } catch (error: any) {
       console.log('error:', error)
+    }finally{
+      reFreshData()
     }
   }
   const conclude_campaign = async () => {
@@ -134,6 +139,8 @@ function NFTCard(props: { token: any }) {
 
     } catch (error: any) {
       console.log('error:', error)
+    }finally{
+      reFreshData()
     }
   }
   const Voting = async (type: string) => {
@@ -153,12 +160,19 @@ function NFTCard(props: { token: any }) {
     } catch (error: any) {
       console.log('error:', error)
     }
+    finally {
+      reFreshData()
+    }
+
   }
 
 
   const showModal = () => {
     fetchDetail()
     setIsModalOpen(true);
+  };
+  const showJoinModal = () => {
+    setIsJoinModalOpen(true);
   };
 
   const handleOk = () => {
@@ -167,6 +181,9 @@ function NFTCard(props: { token: any }) {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+  const handleJoinCancel = () => {
+    setIsJoinModalOpen(false);
   };
   const { account, signAndSubmitTransaction } = useWallet();
   const [campaigndetails, setcampaigndetails] = useState(null);
@@ -191,11 +208,6 @@ function NFTCard(props: { token: any }) {
   const ipfsUri = current_token_data?.token_uri;
 
   const startCampaign = async () => {
-    // setloading(true);
-    const id = current_token_data?.token_name;
-    const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
-    const match = id.match(regex);
-    const idfinal = parseInt(match[1]);
 
     try {
       const mintTransaction = {
@@ -213,21 +225,23 @@ function NFTCard(props: { token: any }) {
     } catch (error) {
       console.error("Error handling", error);
     } finally {
-      //   setloading(false);
+      reFreshData()
     }
   };
 
 
-  const joinCampaign = async () => {
-    // setloading(true);
-    const id = current_token_data?.token_name;
-    const regex = /#(\d+):/; // Regular expression to match the number after '#' and before ':'
-    const match = id.match(regex);
-    const idfinal = parseInt(match[1]);
+  const joinCampaign = async (amout: any) => {
+    let sumValue = '0'
+    if (campaigndetails && campaigndetails[2]) {
+
+      sumValue = (amout * campaigndetails[2]).toString()
+    } else {
+      sumValue = '99'
+    }
 
     try {
       const mintTransaction = {
-        arguments: [idfinal, current_token_data?.token_data_id],
+        arguments: [sumValue, current_token_data?.token_data_id],
         function:
           `${moduleAddress}::cw::join_campaign`,
         type: "entry_function_payload",
@@ -242,6 +256,7 @@ function NFTCard(props: { token: any }) {
       console.error("Error handling", error);
     } finally {
       //   setloading(false);
+      reFreshData()
     }
   };
 
@@ -262,6 +277,8 @@ function NFTCard(props: { token: any }) {
 
     } catch (error: any) {
       console.log('error:', error)
+    }finally{
+      reFreshData()
     }
   }
 
@@ -273,6 +290,12 @@ function NFTCard(props: { token: any }) {
       values.milestone,
       values.proof,
     ])
+  }
+  const onJoinFinish = async (values: any) => {
+    await joinCampaign(values.entry_sum)
+    reFreshData()
+    handleJoinCancel()
+    messageApi.success('Join succeed!')
   }
 
   const getcollection = async () => {
@@ -302,6 +325,12 @@ function NFTCard(props: { token: any }) {
       console.error("Error fetching nft data:", error);
     }
   }
+  const reFreshData = () => {
+    getMilestonesNow();
+    getIsMilestonDown();
+    getIsVotingOpen();
+    getcollection();
+  }
   useEffect(() => {
     getMilestonesNow();
     getIsMilestonDown();
@@ -312,12 +341,14 @@ function NFTCard(props: { token: any }) {
 
   return (
     <>
+      {contextHolder}
       <Card
         hoverable
         style={{
-          border: "1px solid #0162FF",
-          boxShadow: "inset -10px -10px 60px 0 rgba(255, 255, 255, 0.4)",
-          background: '#DCBFFF',
+          border: "1px solid rgba(255, 255, 255, 0.4)",
+          // boxShadow: "inset -10px -10px 60px 0 rgba(255, 255, 255, 0.4)",
+          // background: '#DCBFFF',
+          background: '#59687E',
           width: 400
         }}
         cover={<img alt="example" src={`${'https://nftstorage.link/ipfs'}/${removePrefix(
@@ -326,14 +357,14 @@ function NFTCard(props: { token: any }) {
       >
         <Meta title={current_token_data?.token_name} description={current_token_data?.current_collection?.description} />
         <div className="space-y-2">
-          <div>Start Time: <span className="font-semibold">{campaigndetails ? campaigndetails[0] : ''}</span></div>
-          <div>Min entry price: <span className="font-semibold">{campaigndetails ? campaigndetails[1] : ''}</span></div>
-          <div>Unit price: <span className="font-semibold">{campaigndetails ? campaigndetails[2] : ''}</span></div>
-          <div>Target: <span className="font-semibold">{campaigndetails ? campaigndetails[3] : ''}</span></div>
-          <div>Total supply: <span className="font-semibold">{campaigndetails ? campaigndetails[4] : ''}</span></div>
+          {/* <div>Start Time: <span className="font-semibold">{campaigndetails ? campaigndetails[0] : ''}</span></div> */}
+          <div className='mt-4'>Min entry price: <span className="font-semibold">{campaigndetails ? campaigndetails[1] : ''}</span>&nbsp;&nbsp; <b>$APT</b></div>
+          <div>Unit price: <span className="font-semibold">{campaigndetails ? campaigndetails[2] : ''}</span>&nbsp;&nbsp; <b>$APT</b></div>
+          <div>Target: <span className="font-semibold">{campaigndetails ? campaigndetails[3] : ''}</span>&nbsp;&nbsp; <b>$APT</b></div>
+          <div>Total supply: <span className="font-semibold">{campaigndetails ? campaigndetails[4] : ''}</span>&nbsp;&nbsp; <b>$APT</b> </div>
         </div>
         <div className='flex flex-col gap-2 mt-4'>
-          <Button onClick={joinCampaign}>Join</Button>
+          <Button onClick={showJoinModal}>Join</Button>
           {campaigndetails && campaigndetails[4] >= campaigndetails[3] &&
             (
               <Button onClick={startCampaign}>Start</Button>
@@ -341,11 +372,26 @@ function NFTCard(props: { token: any }) {
           <Button onClick={showModal}>milestone Completion</Button>
           {isVotingOpen && <Button disabled={!isVotingOpen} onClick={() => Voting('true')}>Voting for Agree</Button>}
           {isVotingOpen && <Button disabled={!isVotingOpen} onClick={() => Voting('false')}>Voting for Against</Button>}
-          {isMilestonDown && <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>conclude_milestone</Button>}
-          {mileStonesNow == 4 && <Button disabled={mileStonesNow != 4} onClick={() => conclude_campaign()}>conclude_campaign</Button>}
+          {isMilestonDown && <Button disabled={!isMilestonDown} onClick={() => conclude_milestone()}>Conclude Milestone</Button>}
+          {mileStonesNow == 4 && <Button disabled={mileStonesNow != 4} onClick={() => conclude_campaign()}>Conclude Campaign</Button>}
         </div>
 
       </Card>
+      <Modal title="Join Campain" open={isJoinModalOpen} onCancel={handleJoinCancel} footer={null}>
+
+        <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onJoinFinish}>
+
+          <Form.Item label="entry_sum" name="entry_sum" rules={[{ required: true, message: 'Please input!' }]}>
+            <InputNumber min={1} />
+          </Form.Item>
+
+          <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
       <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel} footer={null}>
 
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>

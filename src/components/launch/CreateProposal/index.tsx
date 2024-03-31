@@ -33,10 +33,9 @@ const CreateProposal = () => {
   };
   const { RangePicker } = DatePicker;
   const onFinish = (values: any) => {
-    console.log(values.start_time.valueOf())
     createProposal([
       values.campaign_name,
-      values.start_time.valueOf(),
+      '1',
       values.min_entry_price.toString(),
       values.unit_price.toString(),
       values.collection_name,
@@ -95,34 +94,34 @@ const CreateProposal = () => {
       }}
       >
         <Form {...formItemLayout} variant="filled" style={{ maxWidth: 800 }} onFinish={onFinish}>
-          <Form.Item label="campaign_name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="Campaign Name" name="campaign_name" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             label="start_time"
             name="start_time"
             rules={[{ required: true, message: 'Please input!' }]}
           >
             <DatePicker />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
-            label="min_entry_price"
+            label="Min Entry Price"
             name="min_entry_price"
             rules={[{ required: true, message: 'Please input!' }]}
           >
             <InputNumber style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
-            label="unit_price"
+            label="Unit Price"
             name="unit_price"
             rules={[{ required: true, message: 'Please input!' }]}
           >
             <InputNumber style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item label="collection_name" name="collection_name" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="Collection Name" name="collection_name" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label=" collection_uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label=" Collection Uri" name="collection_uri" rules={[{ required: true, message: 'Please input!' }]}>
             <div className="w-full h-48 ring-1 ring-gray-200 mb-10 mt-10">
                 {picture ? (
                   <>
@@ -168,23 +167,23 @@ const CreateProposal = () => {
               </div>
           </Form.Item>
           <Form.Item
-            label="target"
+            label="Target"
             name="target"
             rules={[{ required: true, message: 'Please input!' }]}
           >
             <InputNumber style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item label="first stage goal" name="the_first_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="First Stage Goal" name="the_first_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="second stage goal" name="the_second_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="Second Stage Goal" name="the_second_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="third stage goal" name="the_third_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="Third Stage Goal" name="the_third_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="fourth stage goal" name="the_fourth_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
+          <Form.Item label="Fourth Stage Goal" name="the_fourth_stage_goal" rules={[{ required: true, message: 'Please input!' }]}>
             <Input />
           </Form.Item>
 
